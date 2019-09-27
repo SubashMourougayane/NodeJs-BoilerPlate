@@ -1,6 +1,6 @@
 const Users = require('./users');
-// const Todo = require('./todo');
+const Todo = require('./todo');
 
-const resolverArray = [Users]
+const resolverArray = [Users, Todo]
 
 module.exports = resolverArray

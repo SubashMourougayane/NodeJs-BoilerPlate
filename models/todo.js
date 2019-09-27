@@ -1,29 +1,27 @@
 const Sequelize = require('sequelize');
 const DB = require('../config/db');
-const Todo = require('./todo');
-const Users = DB.define('users',{
+
+const Todo = DB.define('todo',{
     id : {
         type : Sequelize.INTEGER,
         allowNull : false,
         primaryKey : true,
         autoIncrement : true
     },
-    user_name : {
-        type : Sequelize.STRING,
+    user_id : {
+        type : Sequelize.INTEGER,
         allowNull : false,
         
     },
-    email : {
+    title : {
         type : Sequelize.STRING,
         allowNull : false,
-        unique: true
     },
-    password : {
+    description : {
         type : Sequelize.STRING,
         allowNull : false,
     }
 }) 
 
-Users.hasMany(Todo);
 
-module.exports = Users;
+module.exports = Todo;
