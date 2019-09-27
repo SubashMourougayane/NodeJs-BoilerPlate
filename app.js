@@ -2,13 +2,18 @@ const express = require('express');
 const cluster = require('cluster');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
-const cors  = require('cors');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const { ApolloServer } = require('apollo-server-express');
+
+const typeDefs = require('./graphql/typedefs/index');
+const resolvers = require('./graphql/resolvers/index');
+
+
 const GATEKEEPER = require('./gatekeeper/gatekeeper');
 
 const DB = require('./config/db');
 
-
-const userRouter = require('./routes/users');
 
 const routeInit = (app) => {
 
@@ -21,13 +26,29 @@ const routeInit = (app) => {
         next();
     });
     app.use(cors());
+
     app.use(bodyParser.json());
     app.use(cookieParser());
     app.use(bodyParser.urlencoded({
         extended: true
     }));
 
+    app.use((req,res,next)=>{
+        
+        const token  = req.cookies['dcodeUser'];
+        if(token){
+            const data = jwt.verify(token,'shhhhh');
+            if(data.email){
+                req['user'] = data
+            }
+            next()
+        }else{
 
+            next()
+        }
+        
+
+    })
     app.get("/sample", (req, res) => {
         GATEKEEPER.response(res, 200, {
             Server: process.env.SERVER_NAME,
@@ -37,8 +58,7 @@ const routeInit = (app) => {
         });
     });
 
-    //add all your routes here
-    
+
 
 }
 
@@ -62,8 +82,24 @@ const init = () => {
 
     } else {
         var app = express();
+        
+        
         routeInit(app);
+            
         connectDB();
+
+        const server = new ApolloServer({
+            typeDefs,
+            resolvers,
+            context: ({ req,res }) => ({
+                req,res                       
+            }),
+        
+        })
+        
+
+        server.applyMiddleware({ app })
+
         DB.sync().then(() => {
             app.listen(process.env.PORT, () => console.log("server listening on port " + process.env.PORT + " in " + process.env.ENV + " mode version is " + require("./package.json").version));
         })

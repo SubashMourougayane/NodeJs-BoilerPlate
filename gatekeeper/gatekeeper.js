@@ -1,5 +1,3 @@
-const response = (res, code, message) => {
-    return res.status(code).send(message)
+module.exports.response=(res,code,data)=>{
+    res.send(code,data);
 }
-
-exports.response = response;
